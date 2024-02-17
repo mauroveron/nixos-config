@@ -170,28 +170,14 @@ in {
 
   programs.neovim = {
     enable = true;
-  #  package = pkgs.neovim-nightly;
+
+    viAlias = true;
+    vimAlias = true;
+    vimdiffAlias = true;
 
     withPython3 = true;
 
     plugins = with pkgs; [
-      #customVim.vim-copilot
-  #    customVim.vim-cue
-  #    customVim.vim-fish
-      #customVim.vim-fugitive
-  #    customVim.vim-glsl
-  #    customVim.vim-misc
-  #    customVim.vim-pgsql
-  #    customVim.vim-tla
-  #    customVim.vim-zig
-  #    customVim.pigeon
-  #    customVim.AfterColors
-
-  #    customVim.vim-nord
-  #    customVim.nvim-comment
-  #    customVim.nvim-conform
-  #    customVim.nvim-lspconfig
-
       vimPlugins.nord-vim
       vimPlugins.copilot-vim
       vimPlugins.vim-fugitive
@@ -200,16 +186,20 @@ in {
       vimPlugins.nvim-treesitter-textobjects
       vimPlugins.plenary-nvim
       vimPlugins.telescope-nvim
-
       vimPlugins.vim-airline
       vimPlugins.vim-airline-themes
-  #    vimPlugins.vim-eunuch
       vimPlugins.vim-gitgutter
-
       vimPlugins.vim-markdown
       vimPlugins.vim-nix
       vimPlugins.typescript-vim
+
       vimPlugins.nvim-treesitter-parsers.elixir
+      vimPlugins.nvim-treesitter-parsers.nix
+      vimPlugins.nvim-treesitter-parsers.python
+      vimPlugins.nvim-treesitter-parsers.bash
+      vimPlugins.nvim-treesitter-parsers.lua
+      vimPlugins.nvim-treesitter-parsers.typescript
+      vimPlugins.nvim-treesitter-parsers.go
     ] ++ (lib.optionals (!isWSL) [
   #    # This is causing a segfaulting while building our installer
   #    # for WSL so just disable it for now. This is a pretty
@@ -217,7 +207,11 @@ in {
   #    customVim.vim-devicons
     ]);
 
-    extraConfig = (import ./vim-config.nix) {};
+    extraLuaConfig = ''
+      ${builtins.readFile ./nvim/options.lua}
+      ${builtins.readFile ./nvim/keymaps.lua}
+    '';
+
   };
 
   services.gpg-agent = {
