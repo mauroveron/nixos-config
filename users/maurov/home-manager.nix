@@ -1,0 +1,242 @@
+{ isWSL, inputs, ... }:
+
+{ config, lib, pkgs, ... }:
+
+let
+  isDarwin = pkgs.stdenv.isDarwin;
+  isLinux = pkgs.stdenv.isLinux;
+
+  # For our MANPAGER env var
+  # https://github.com/sharkdp/bat/issues/1145
+  manpager = (pkgs.writeShellScriptBin "manpager" (if isDarwin then ''
+    sh -c 'col -bx | bat -l man -p'
+    '' else ''
+    cat "$1" | col -bx | bat --language man --style plain
+  ''));
+in {
+  home.stateVersion = "23.11";
+
+  xdg.enable = true;
+
+  #---------------------------------------------------------------------
+  # Packages
+  #---------------------------------------------------------------------
+
+  # Packages I always want installed. Most packages I install using
+  # per-project flakes sourced with direnv and nix-shell, so this is
+  # not a huge list.
+  home.packages = [
+    pkgs.asciinema
+    pkgs.bat
+    pkgs.fd
+    pkgs.fzf
+    pkgs.gh
+    pkgs.htop
+    pkgs.jq
+    pkgs.ripgrep
+    pkgs.tree
+    pkgs.watch
+
+    pkgs.gopls
+
+    pkgs.mosh
+    pkgs.iperf
+    pkgs.python311
+    pkgs.python311Packages.ec2instanceconnectcli
+    pkgs.ansible
+    pkgs.beam.packages.erlang_26.elixir_1_15
+    pkgs.ruby_3_2
+    pkgs.lftp
+    pkgs.axel
+
+    # Node is required for Copilot.vim
+    pkgs.nodejs
+  ] ++ (lib.optionals isDarwin [
+    # This is automatically setup on Linux
+    pkgs.cachix
+    pkgs.tailscale
+  ]) ++ (lib.optionals (isLinux && !isWSL) [
+    pkgs.xfce.xfce4-terminal
+  ]);
+
+  #---------------------------------------------------------------------
+  # Env vars and dotfiles
+  #---------------------------------------------------------------------
+
+  home.sessionVariables = {
+    LANG = "en_US.UTF-8";
+    LC_CTYPE = "en_US.UTF-8";
+    LC_ALL = "en_US.UTF-8";
+    EDITOR = "nvim";
+    PAGER = "less -FirSwX";
+    MANPAGER = "${manpager}/bin/manpager";
+  };
+
+  #home.file.".gdbinit".source = ./gdbinit;
+  #home.file.".inputrc".source = ./inputrc;
+
+  #---------------------------------------------------------------------
+  # Programs
+  #---------------------------------------------------------------------
+
+  programs.gpg.enable = !isDarwin;
+
+  programs.zsh = {
+    enable = true;
+    envExtra = ''
+    '';
+    prezto = {
+      enable = true;
+      # vi mode breaks history search with ctrl+r
+      # but  you can press ESC and then / to search forward or ? to search backwards
+      editor.keymap = "vi";
+      pmodules = [
+        "git"
+        "syntax-highlighting"
+        "history"
+        "history-substring-search"
+        "completion"
+        "prompt"
+      ];
+    };
+  };
+
+  programs.direnv = {
+    enable = true;
+    enableZshIntegration = true;
+    nix-direnv.enable = true;
+  };
+
+  programs.git = {
+    enable = true;
+    userName = "Mauro Veron";
+    userEmail = "mauroveron@gmail.com";
+    #signing = {
+    #  key = "523D5DC389D273BC";
+    #  signByDefault = true;
+    #};
+    aliases = {
+      cleanup = "!git branch --merged | grep  -v '\\*\\|master\\|develop' | xargs -n 1 -r git branch -d";
+      prettylog = "log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(r) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative";
+      root = "rev-parse --show-toplevel";
+    };
+    extraConfig = {
+      branch.autosetuprebase = "always";
+      color.ui = true;
+      core.askPass = ""; # needs to be empty to use terminal for ask pass
+      credential.helper = "store"; # want to make this more secure
+      github.user = "mauroveron";
+      push.default = "tracking";
+      init.defaultBranch = "main";
+    };
+  };
+
+  # progrms.tmux = {
+  #  enable = true;
+  #  terminal = "xterm-256color";
+  #  shortcut = "l";
+  #  secureSocket = false;
+
+  #  extraConfig = ''
+  #    set -ga terminal-overrides ",*256col*:Tc"
+
+  #    set -g @dracula-show-battery false
+  #    set -g @dracula-show-network false
+  #    set -g @dracula-show-weather false
+
+  #    bind -n C-k send-keys "clear"\; send-keys "Enter"
+
+  #    run-shell ${sources.tmux-pain-control}/pain_control.tmux
+  #    run-shell ${sources.tmux-dracula}/dracula.tmux
+  #  '';
+  #};
+
+  programs.i3status = {
+    enable = isLinux && !isWSL;
+
+    general = {
+      colors = true;
+      color_good = "#8C9440";
+      color_bad = "#A54242";
+      color_degraded = "#DE935F";
+    };
+
+    modules = {
+      ipv6.enable = false;
+      "wireless _first_".enable = false;
+      "battery all".enable = false;
+    };
+  };
+
+  programs.neovim = {
+    enable = true;
+  #  package = pkgs.neovim-nightly;
+
+    withPython3 = true;
+
+    plugins = with pkgs; [
+      #customVim.vim-copilot
+  #    customVim.vim-cue
+  #    customVim.vim-fish
+      #customVim.vim-fugitive
+  #    customVim.vim-glsl
+  #    customVim.vim-misc
+  #    customVim.vim-pgsql
+  #    customVim.vim-tla
+  #    customVim.vim-zig
+  #    customVim.pigeon
+  #    customVim.AfterColors
+
+  #    customVim.vim-nord
+  #    customVim.nvim-comment
+  #    customVim.nvim-conform
+  #    customVim.nvim-lspconfig
+
+      vimPlugins.nord-vim
+      vimPlugins.copilot-vim
+      vimPlugins.vim-fugitive
+      vimPlugins.lsp-zero-nvim
+      vimPlugins.nvim-treesitter
+      vimPlugins.nvim-treesitter-textobjects
+      vimPlugins.plenary-nvim
+      vimPlugins.telescope-nvim
+
+      vimPlugins.vim-airline
+      vimPlugins.vim-airline-themes
+  #    vimPlugins.vim-eunuch
+      vimPlugins.vim-gitgutter
+
+      vimPlugins.vim-markdown
+      vimPlugins.vim-nix
+      vimPlugins.typescript-vim
+      vimPlugins.nvim-treesitter-parsers.elixir
+    ] ++ (lib.optionals (!isWSL) [
+  #    # This is causing a segfaulting while building our installer
+  #    # for WSL so just disable it for now. This is a pretty
+  #    # unimportant plugin anyway.
+  #    customVim.vim-devicons
+    ]);
+
+    extraConfig = (import ./vim-config.nix) {};
+  };
+
+  services.gpg-agent = {
+    enable = isLinux;
+    pinentryFlavor = "tty";
+
+    # cache the keys forever so we don't get asked for a password
+    defaultCacheTtl = 31536000;
+    maxCacheTtl = 31536000;
+  };
+
+  #xresources.extraConfig = builtins.readFile ./Xresources;
+
+  # Make cursor not tiny on HiDPI screens
+  #home.pointerCursor = lib.mkIf (isLinux && !isWSL) {
+  #  name = "Vanilla-DMZ";
+  #  package = pkgs.vanilla-dmz;
+  #  size = 128;
+  #  x11.enable = true;
+  #};
+}
+
