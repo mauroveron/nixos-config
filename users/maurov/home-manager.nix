@@ -36,18 +36,13 @@ in {
     pkgs.ripgrep
     pkgs.tree
     pkgs.watch
-
-    pkgs.gopls
+    pkgs.nurl # generates nix fetch calls from urls
 
     pkgs.mosh
     pkgs.iperf
-    pkgs.python311
-    pkgs.python311Packages.ec2instanceconnectcli
-    pkgs.ansible
-    pkgs.beam.packages.erlang_26.elixir_1_15
-    pkgs.ruby_3_2
     pkgs.lftp
     pkgs.axel
+
 
     # Node is required for Copilot.vim
     pkgs.nodejs
@@ -85,6 +80,15 @@ in {
     enable = true;
     envExtra = ''
     '';
+
+    shellAliases = {
+      tn = "tmux new -s ";
+      ta = "tmux attach";
+      tl = "tmux ls";
+      gs = "git status";
+      gpl = "git pull --rebase";
+    };
+
     prezto = {
       enable = true;
       # vi mode breaks history search with ctrl+r
@@ -168,51 +172,73 @@ in {
     };
   };
 
-  programs.neovim = {
-    enable = true;
+  programs.neovim =
+    let
+      toLua = str: "lua <<EOF\n${str}\nEOF";
+      toLuaFile = file: "lua <<EOF\n${builtins.readFile file}\nEOF";
+    in {
 
-    viAlias = true;
-    vimAlias = true;
-    vimdiffAlias = true;
+      enable = true;
 
-    withPython3 = true;
+      viAlias = true;
+      vimAlias = true;
+      vimdiffAlias = true;
 
-    plugins = with pkgs; [
-      vimPlugins.nord-vim
-      vimPlugins.copilot-vim
-      vimPlugins.vim-fugitive
-      vimPlugins.lsp-zero-nvim
-      vimPlugins.nvim-treesitter
-      vimPlugins.nvim-treesitter-textobjects
-      vimPlugins.plenary-nvim
-      vimPlugins.telescope-nvim
-      vimPlugins.vim-airline
-      vimPlugins.vim-airline-themes
-      vimPlugins.vim-gitgutter
-      vimPlugins.vim-markdown
-      vimPlugins.vim-nix
-      vimPlugins.typescript-vim
+      withPython3 = true;
 
-      vimPlugins.nvim-treesitter-parsers.elixir
-      vimPlugins.nvim-treesitter-parsers.nix
-      vimPlugins.nvim-treesitter-parsers.python
-      vimPlugins.nvim-treesitter-parsers.bash
-      vimPlugins.nvim-treesitter-parsers.lua
-      vimPlugins.nvim-treesitter-parsers.typescript
-      vimPlugins.nvim-treesitter-parsers.go
-    ] ++ (lib.optionals (!isWSL) [
-  #    # This is causing a segfaulting while building our installer
-  #    # for WSL so just disable it for now. This is a pretty
-  #    # unimportant plugin anyway.
-  #    customVim.vim-devicons
-    ]);
+      plugins = with pkgs; [
+        vimPlugins.nord-vim
+        vimPlugins.copilot-vim
+        vimPlugins.vim-fugitive
+        vimPlugins.lsp-zero-nvim
+        vimPlugins.nvim-treesitter
+        vimPlugins.nvim-treesitter-textobjects
+        vimPlugins.plenary-nvim
+        vimPlugins.telescope-nvim
+        vimPlugins.vim-airline
+        vimPlugins.vim-airline-themes
+        vimPlugins.vim-gitgutter
+        vimPlugins.vim-markdown
+        vimPlugins.vim-nix
+        vimPlugins.typescript-vim
+        vimPlugins.tokyonight-nvim
 
-    extraLuaConfig = ''
-      ${builtins.readFile ./nvim/options.lua}
-      ${builtins.readFile ./nvim/keymaps.lua}
-    '';
+        {
+          plugin = vimPlugins.nvim-tree-lua;
+          config = toLua "require(\"nvim-tree\").setup()";
+        }
 
-  };
+        vimPlugins.nvim-treesitter-parsers.elixir
+        vimPlugins.nvim-treesitter-parsers.nix
+        vimPlugins.nvim-treesitter-parsers.python
+        vimPlugins.nvim-treesitter-parsers.bash
+        vimPlugins.nvim-treesitter-parsers.lua
+        vimPlugins.nvim-treesitter-parsers.typescript
+        vimPlugins.nvim-treesitter-parsers.go
+        vimPlugins.nvim-treesitter-parsers.python
+      ] ++ (lib.optionals (!isWSL) [
+    #    # This is causing a segfaulting while building our installer
+    #    # for WSL so just disable it for now. This is a pretty
+    #    # unimportant plugin anyway.
+    #    customVim.vim-devicons
+      ]);
+
+      extraPackages = with pkgs; [
+        rnix-lsp
+        luajitPackages.lua-lsp
+        # lsp servers
+        gopls
+        rnix-lsp
+        elixir-ls
+      ];
+
+      extraLuaConfig = ''
+        ${builtins.readFile ./nvim/options.lua}
+        ${builtins.readFile ./nvim/keymaps.lua}
+        ${builtins.readFile ./nvim/colors.lua}
+      '';
+
+    };
 
   services.gpg-agent = {
     enable = isLinux;
