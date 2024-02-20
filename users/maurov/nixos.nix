@@ -8,6 +8,8 @@
   programs.zsh.enable = true;
   systemd.services.NetworkManager-wait-online.enable = false;
 
+  programs.ssh.startAgent = true;
+
   users.users.maurov = {
     isNormalUser = true;
     home = "/home/maurov";
