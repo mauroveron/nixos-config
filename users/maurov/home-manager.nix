@@ -76,6 +76,7 @@ in {
 
   programs.gpg.enable = !isDarwin;
 
+
   programs.zsh = {
     enable = true;
     envExtra = ''
@@ -135,25 +136,74 @@ in {
     };
   };
 
-  # progrms.tmux = {
-  #  enable = true;
-  #  terminal = "xterm-256color";
+  programs.tmux = {
+    enable = true;
+    terminal = "xterm-256color";
   #  shortcut = "l";
-  #  secureSocket = false;
+    secureSocket = false;
 
-  #  extraConfig = ''
-  #    set -ga terminal-overrides ",*256col*:Tc"
+    extraConfig = ''
+      # same prefix as GNU Screen
+      set -g prefix C-a
+      unbind C-b
+      bind C-a send-prefix
 
-  #    set -g @dracula-show-battery false
-  #    set -g @dracula-show-network false
-  #    set -g @dracula-show-weather false
+      set-option -g default-shell $SHELL
+      set-option -g allow-rename off
 
-  #    bind -n C-k send-keys "clear"\; send-keys "Enter"
+      set -g default-terminal "screen-256color"
 
-  #    run-shell ${sources.tmux-pain-control}/pain_control.tmux
-  #    run-shell ${sources.tmux-dracula}/dracula.tmux
-  #  '';
-  #};
+      unbind r
+      bind r source-file ~/.tmux.conf \; display "Reloaded ~/.tmux.conf"
+
+      bind C-o split-window -v "tmux list-sessions | sed -E 's/:.*$//' | grep -v \"^$(tmux display-message -p '#S')\$\" | fzf --reverse | xargs tmux switch-client -t"
+
+      unbind ^A
+      bind ^A select-pane -t :.+
+
+      # rebind split pane keys and open panes in the current directory
+      unbind %
+      bind | split-window -h -c "#{pane_current_path}"
+      bind - split-window -v -c "#{pane_current_path}"
+
+      # start numbering at 1
+      set -g base-index 1
+      set -g pane-base-index 1
+      set-window-option -g pane-base-index 1
+      set-option -g renumber-windows on
+
+      # Make Vim responsive to esc
+      set -s escape-time 0
+
+      #status bar
+      set -g status-bg black
+      set -g status-fg white
+      set -g status-left '#[fg=green]#H'
+
+      # set window notification
+      setw -g monitor-activity on
+      set -g visual-activity on
+
+      set-window-option -g window-status-current-style bg=purple
+
+      # navigating trough panes
+      unbind h
+      unbind j
+      unbind k
+      unbind l
+
+      # smart pane switching with awareness of vim splits
+      bind -n C-h run "(ps -o state= -o comm= -t '#{pane_tty}' | grep -iq nvim && tmux send-keys C-h) || tmux select-pane -L"
+      bind -n C-j run "(ps -o state= -o comm= -t '#{pane_tty}' | grep -iq nvim && tmux send-keys C-j) || tmux select-pane -D"
+      bind -n C-k run "(ps -o state= -o comm= -t '#{pane_tty}' | grep -iq nvim && tmux send-keys C-k) || tmux select-pane -U"
+      bind -n C-l run "(ps -o state= -o comm= -t '#{pane_tty}' | grep -iq nvim && tmux send-keys C-l) || tmux select-pane -R"
+
+      bind -n C-right resize-pane -R 20
+      bind -n C-left resize-pane -L 20
+      bind -n C-up resize-pane -U 5
+      bind -n C-down resize-pane -D 5
+    '';
+  };
 
   programs.i3status = {
     enable = isLinux && !isWSL;
@@ -202,6 +252,7 @@ in {
         vimPlugins.vim-nix
         vimPlugins.typescript-vim
         vimPlugins.tokyonight-nvim
+        vimPlugins.tmux-nvim
 
         {
           plugin = vimPlugins.nvim-tree-lua;
