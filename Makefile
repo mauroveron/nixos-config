@@ -68,9 +68,12 @@ vm.secrets:
 		--exclude='environment' \
 		$(HOME)/.ssh/ $(NIXUSER)@$(NIXADDR):~/.ssh
 
+# See https://github.com/NixOS/nixpkgs/issues/169693
+# need to add --install-bootloader, otherwise install fails when my config tries
+# to downgrade the bootloader. Not sure why the bootloader gets downgraded though
 vm.switch:
 	ssh $(SSH_OPTIONS) -p$(NIXPORT) $(NIXUSER)@$(NIXADDR) " \
-		sudo NIXPKGS_ALLOW_UNSUPPORTED_SYSTEM=1 nixos-rebuild switch --flake \"/nix-config#${NIXNAME}\" \
+		sudo NIXPKGS_ALLOW_UNSUPPORTED_SYSTEM=1 nixos-rebuild switch --install-bootloader --flake \"/nix-config#${NIXNAME}\" \
 	"
 
 vm: vm.copy vm.switch
