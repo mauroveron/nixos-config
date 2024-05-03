@@ -16,7 +16,7 @@
     extraGroups = [ "docker" "wheel" ];
     shell = pkgs.zsh;
     # you can generate the password with mkpasswd
-    hashedPassword = "$y$j9T$MzNzvc9shfAIeMgMVM9wu/$8tM1E3wLy81t4reQVjFUFHIP0H5h2DFwDUNZ7X2RSj3";
+    hashedPassword = "$y$j9T$OrNpLHUrPbAEq6CZOZqw./$zsEhRmNvjJF0JXGtpFirjp6A4abn8AnDXna9GyjQRf.";
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOwtpJV18Jy3Cbwyc1r7IhVKXs3NVnwTBfXxFJlkqh6p maurov"
     ];
