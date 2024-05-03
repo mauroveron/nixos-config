@@ -1,5 +1,7 @@
 .DEFAULT_GOAL:=help
 
+include make-env
+
 NIXADDR ?= unset
 NIXPORT ?= 22
 NIXUSER ?= maurov
