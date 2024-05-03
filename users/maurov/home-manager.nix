@@ -65,6 +65,7 @@ in {
     EDITOR = "nvim";
     PAGER = "less -FirSwX";
     MANPAGER = "${manpager}/bin/manpager";
+    TZ = "Pacific/Auckland";
   };
 
   #home.file.".gdbinit".source = ./gdbinit;
