@@ -29,5 +29,9 @@
         system = "aarch64-linux";
         user = "maurov";
     };
+     nixosConfigurations.vm-aarch64-utm = mkSystem "vm-aarch64-utm" {
+        system = "aarch64-linux";
+        user = "maurov";
+    };
   };
 }
