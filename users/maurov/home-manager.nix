@@ -37,6 +37,7 @@ in {
     pkgs.tree
     pkgs.watch
     pkgs.nurl # generates nix fetch calls from urls
+    pkgs.eza
 
     pkgs.mosh
     pkgs.iperf
@@ -89,6 +90,7 @@ in {
       tl = "tmux ls";
       gs = "git status";
       gpl = "git pull --rebase";
+      ls = "eza"
     };
 
     prezto = {
@@ -125,6 +127,7 @@ in {
       cleanup = "!git branch --merged | grep  -v '\\*\\|master\\|develop' | xargs -n 1 -r git branch -d";
       prettylog = "log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(r) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative";
       root = "rev-parse --show-toplevel";
+      co = "checkout"
     };
     extraConfig = {
       branch.autosetuprebase = "always";
