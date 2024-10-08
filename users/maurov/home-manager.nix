@@ -90,7 +90,7 @@ in {
       tl = "tmux ls";
       gs = "git status";
       gpl = "git pull --rebase";
-      ls = "eza";
+      ls = "eza -l --icons";
     };
 
     prezto = {
