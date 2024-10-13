@@ -257,6 +257,7 @@ in {
         vimPlugins.typescript-vim
         vimPlugins.tokyonight-nvim
         vimPlugins.tmux-nvim
+        vimPlugins.vim-terraform
 
         {
           plugin = vimPlugins.nvim-tree-lua;
@@ -271,6 +272,7 @@ in {
         vimPlugins.nvim-treesitter-parsers.typescript
         vimPlugins.nvim-treesitter-parsers.go
         vimPlugins.nvim-treesitter-parsers.python
+        vimPlugins.nvim-treesitter-parsers.terraform
       ] ++ (lib.optionals (!isWSL) [
     #    # This is causing a segfaulting while building our installer
     #    # for WSL so just disable it for now. This is a pretty
