@@ -86,7 +86,7 @@ in {
 
     shellAliases = {
       tn = "tmux new -s ";
-      ta = "tmux attach";
+      ta = "tmux a -t";
       tl = "tmux ls";
       gs = "git status";
       gpl = "git pull --rebase";
